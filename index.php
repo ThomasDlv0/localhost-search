@@ -46,7 +46,8 @@
         }
 
         .folders {
-            width: 580px;
+            width: 80%;
+            max-width: 1200px;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
@@ -60,10 +61,22 @@
             background: #f8f9fa;
             color: #202124;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .folder:hover {
             background: #e8e8e9;
+        }
+
+        .folder-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -71,13 +84,63 @@
 <div class="logo">MAMP</div>
 
 <div class="search-container">
-    <input type="text" class="search-box" placeholder="Rechercher dans localhost...">
+    <input type="text" class="search-box" placeholder="Rechercher dans localhost..." id="searchInput">
 </div>
 
-<div class="folders">
-    <a href="/portfolio" class="folder">Portfolio</a>
-    <a href="/sfaitV5" class="folder">SfaitV5</a>
-    <a href="/index.html" class="folder">Index.html</a>
+<div class="folders" id="folderContainer">
+    <?php
+    // Chemin vers le répertoire htdocs
+    $htdocsPath = __DIR__;
+
+    // Récupérer tous les éléments du répertoire
+    $items = scandir($htdocsPath);
+
+    // Filtrer les éléments
+    foreach($items as $item) {
+        // Ignorer . et .. et les fichiers cachés
+        if($item != "." && $item != ".." && substr($item, 0, 1) != ".") {
+            $fullPath = $htdocsPath . DIRECTORY_SEPARATOR . $item;
+            $isDir = is_dir($fullPath);
+            $icon = $isDir ? "📁" : "📄";
+
+            echo "<a href='/$item' class='folder' data-name='".strtolower($item)."'>
+                        <span class='folder-icon'>$icon</span>
+                        $item
+                    </a>";
+        }
+    }
+    ?>
 </div>
+
+<script>
+    // Fonction de recherche
+    const searchInput = document.getElementById('searchInput');
+    const folders = document.querySelectorAll('.folder');
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+
+        folders.forEach(folder => {
+            const folderName = folder.dataset.name;
+            if(folderName.includes(searchTerm)) {
+                folder.classList.remove('hidden');
+            } else {
+                folder.classList.add('hidden');
+            }
+        });
+    });
+
+    // Tri alphabétique des dossiers
+    const folderContainer = document.getElementById('folderContainer');
+    const foldersArray = Array.from(folders);
+
+    foldersArray.sort((a, b) => {
+        return a.dataset.name.localeCompare(b.dataset.name);
+    });
+
+    foldersArray.forEach(folder => {
+        folderContainer.appendChild(folder);
+    });
+</script>
 </body>
 </html>
