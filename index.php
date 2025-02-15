@@ -13,11 +13,14 @@
 
         body {
             font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 150px;
+            min-height: 100vh;
+            background-color: #fff;
+        }
+
+        .search-section {
+            padding-top: 100px;
+            text-align: center;
+            margin-bottom: 50px;
         }
 
         .logo {
@@ -29,7 +32,6 @@
         .search-container {
             width: 580px;
             margin: 0 auto;
-            margin-bottom: 30px;
         }
 
         .search-box {
@@ -41,105 +43,124 @@
             outline: none;
         }
 
-        .search-box:hover {
-            box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        .search-results {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .folders {
-            width: 80%;
-            max-width: 1200px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .folder {
-            text-decoration: none;
+        .result-item {
+            margin-bottom: 30px;
             padding: 15px;
             border-radius: 8px;
-            background: #f8f9fa;
-            color: #202124;
+            background: #fff;
             transition: background 0.2s;
+        }
+
+        .result-item:hover {
+            background: #f8f9fa;
+        }
+
+        .result-header {
             display: flex;
             align-items: center;
+            margin-bottom: 10px;
             gap: 10px;
         }
 
-        .folder:hover {
-            background: #e8e8e9;
+        .result-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            background: #f1f3f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .folder-icon {
-            width: 24px;
-            height: 24px;
+        .result-path {
+            color: #202124;
+            font-size: 14px;
+            opacity: 0.7;
         }
 
-        .hidden {
-            display: none;
+        .result-title {
+            color: #1a0dab;
+            font-size: 20px;
+            text-decoration: none;
+            margin: 5px 0;
+            display: block;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .result-description {
+            color: #4d5156;
+            font-size: 14px;
+            line-height: 1.58;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e5e5;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-<div class="logo">MAMP</div>
+<div class="search-section">
+    <div class="logo">MAMP</div>
 
-<div class="search-container">
-    <input type="text" class="search-box" placeholder="Rechercher dans localhost..." id="searchInput">
+    <div class="search-container">
+        <input type="text" class="search-box" placeholder="Rechercher dans localhost..." id="searchInput">
+    </div>
 </div>
 
-<div class="folders" id="folderContainer">
+<div class="search-results">
     <?php
-    // Chemin vers le répertoire htdocs
     $htdocsPath = __DIR__;
-
-    // Récupérer tous les éléments du répertoire
     $items = scandir($htdocsPath);
 
-    // Filtrer les éléments
     foreach($items as $item) {
-        // Ignorer . et .. et les fichiers cachés
         if($item != "." && $item != ".." && substr($item, 0, 1) != ".") {
             $fullPath = $htdocsPath . DIRECTORY_SEPARATOR . $item;
             $isDir = is_dir($fullPath);
             $icon = $isDir ? "📁" : "📄";
 
-            echo "<a href='/$item' class='folder' data-name='".strtolower($item)."'>
-                        <span class='folder-icon'>$icon</span>
-                        $item
-                    </a>";
+            echo "
+                <div class='result-item' data-name='".strtolower($item)."'>
+                    <div class='result-header'>
+                        <div class='result-icon'>$icon</div>
+                        <div class='result-path'>localhost/$item</div>
+                    </div>
+                    <a href='/$item' class='result-title'>$item</a>
+                    <div class='result-description'>
+                        " . ($isDir ? "Dossier contenant des fichiers web" : "Fichier web") . "
+                        situé dans le répertoire principal de votre serveur local.
+                    </div>
+                </div>";
         }
     }
     ?>
 </div>
 
 <script>
-    // Fonction de recherche
     const searchInput = document.getElementById('searchInput');
-    const folders = document.querySelectorAll('.folder');
+    const resultItems = document.querySelectorAll('.result-item');
 
     searchInput.addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
 
-        folders.forEach(folder => {
-            const folderName = folder.dataset.name;
-            if(folderName.includes(searchTerm)) {
-                folder.classList.remove('hidden');
+        resultItems.forEach(item => {
+            const itemName = item.dataset.name;
+            if(itemName.includes(searchTerm)) {
+                item.style.display = 'block';
             } else {
-                folder.classList.add('hidden');
+                item.style.display = 'none';
             }
         });
-    });
-
-    // Tri alphabétique des dossiers
-    const folderContainer = document.getElementById('folderContainer');
-    const foldersArray = Array.from(folders);
-
-    foldersArray.sort((a, b) => {
-        return a.dataset.name.localeCompare(b.dataset.name);
-    });
-
-    foldersArray.forEach(folder => {
-        folderContainer.appendChild(folder);
     });
 </script>
 </body>
